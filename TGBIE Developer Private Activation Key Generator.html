@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NewGen - Developer Key Generator</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0c101d;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 16px;
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    h2 { margin: 0 0 8px; font-size: 18px; color: #fff; }
+    p { font-size: 12px; color: #94a3b8; margin-bottom: 16px; }
+    label { display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; margin-bottom: 6px; text-transform: uppercase; }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: #fff;
+      font-size: 13px;
+      box-sizing: border-box;
+      margin-bottom: 14px;
+      font-family: monospace;
+    }
+    input:focus { outline: none; border-color: #818cf8; }
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .btn-gen { background: #4f46e5; color: #fff; }
+    .btn-gen:hover { background: #4338ca; }
+    .btn-wa { background: #16a34a; color: #fff; }
+    .btn-wa:hover { background: #15803d; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>🔑 Developer Key Generator</h2>
+    <p>Compute activation keys for user device keys [NewGen eEducation].</p>
+
+    <label>User Device Key</label>
+    <input type="text" id="devKeyInput" placeholder="e.g. DEV-8F3E21A4B0C1D9E7">
+
+    <button class="btn-gen" onclick="generateKey()">Generate Activation Key</button>
+
+    <label style="margin-top: 10px;">Resulting Activation Key</label>
+    <input type="text" id="actKeyOutput" readonly placeholder="ACT-XXXXXXXXXXXXXXXX">
+
+    <button class="btn-wa" onclick="sendReplyWhatsApp()">Reply via WhatsApp</button>
+  </div>
+
+  <script>
+    const CRYPTO_SALT = "NEWGEN_SECRET_SALT_2026";
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function generateKey() {
+      const devKey = document.getElementById('devKeyInput').value.trim().toUpperCase();
+      if (!devKey) {
+        alert("Please paste the user's Device Key.");
+        return;
+      }
+      const hash = await sha256(devKey + "::" + CRYPTO_SALT);
+      const activationKey = "ACT-" + hash.substring(0, 16).toUpperCase();
+      document.getElementById('actKeyOutput').value = activationKey;
+    }
+
+    function sendReplyWhatsApp() {
+      const actKey = document.getElementById('actKeyOutput').value;
+      if (!actKey) {
+        alert("Please generate an activation key first.");
+        return;
+      }
+      const message = encodeURIComponent(`Hello! Here is your Activation Key for NewGen eEducation:\n\n${actKey}\n\nEnter this in the activation box to unlock your full lifetime license.`);
+      window.open(`https://wa.me/?text=${message}`, '_blank');
+    }
+  </script>
+</body>
+</html>
